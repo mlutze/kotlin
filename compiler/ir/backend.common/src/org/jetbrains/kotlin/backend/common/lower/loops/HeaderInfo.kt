@@ -14,7 +14,9 @@ import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
+import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
+import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.visitors.IrVisitor
 
 enum class ProgressionDirection {
@@ -87,21 +89,51 @@ class ProgressionHeaderInfo(
     direction = direction
 ) {
 
-    fun revertToLastInclusive(): ProgressionHeaderInfo? =
-        originalLastInclusive?.let {
-            ProgressionHeaderInfo(
-                progressionType = progressionType,
-                first = first,
-                last = originalLastInclusive,
-                step = step,
-                isLastInclusive = true,
-                isReversed = isReversed,
-                canOverflow = canOverflow,
-                direction = direction,
-                additionalStatements = additionalStatements,
-                originalLastInclusive = null
-            )
+    fun revertToLastInclusive(): ProgressionHeaderInfo? {
+        val lastInclusive = originalLastInclusive ?: computeConstLastInclusive() ?: return null
+        return ProgressionHeaderInfo(
+            progressionType = progressionType,
+            first = first,
+            last = lastInclusive,
+            step = step,
+            isLastInclusive = true,
+            isReversed = isReversed,
+            canOverflow = canOverflow,
+            direction = direction,
+            additionalStatements = additionalStatements,
+            originalLastInclusive = null
+        )
+    }
+
+    private fun computeConstLastInclusive(): IrExpression? {
+        if (isLastInclusive) return last
+        val stepAsLong = step.constLongValue ?: return null
+        val lastAsLong = last.constLongValue ?: return null
+
+        // Ensure step is ±1 (matching direction) and `last - step` won't underflow/overflow (KT-42533).
+        when {
+            stepAsLong == 1L && direction == ProgressionDirection.INCREASING ->
+                if (lastAsLong == progressionType.minValueAsLong) return null
+            stepAsLong == -1L && direction == ProgressionDirection.DECREASING ->
+                if (lastAsLong == progressionType.maxValueAsLong) return null
+            else -> return null
         }
+
+        val newLast = lastAsLong - stepAsLong
+        return when (progressionType) {
+            is IntProgressionType ->
+                IrConstImpl.int(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, newLast.toInt())
+            is LongProgressionType ->
+                IrConstImpl.long(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, newLast)
+            is CharProgressionType ->
+                IrConstImpl.char(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, newLast.toInt().toChar())
+            is UIntProgressionType ->
+                IrConstImpl.int(last.startOffset, last.endOffset, progressionType.unsignedType, newLast.toInt())
+            is ULongProgressionType ->
+                IrConstImpl.long(last.startOffset, last.endOffset, progressionType.unsignedType, newLast)
+            else -> error("Unexpected progression type: ${progressionType::class.simpleName}")
+        }
+    }
 
     val canOverflow: Boolean by lazy {
         if (canOverflow != null) return@lazy canOverflow
@@ -177,8 +209,8 @@ class ProgressionHeaderInfo(
                 additionalStatements = additionalStatements
             )
         } else {
-            // If reversed, we would have a "first-exclusive" loop. We are currently not supporting this since it would add more complexity
-            // due to possible overflow when pre-incrementing the loop variable (see KT-42533).
+            // If reversed, we would have a "first-exclusive" loop. We are currently not supporting this for non-constant or
+            // overflowing bounds since it would add more complexity due to possible overflow when pre-incrementing the loop variable (see KT-42533).
             revertToLastInclusive()?.asReversed()
         }
 
