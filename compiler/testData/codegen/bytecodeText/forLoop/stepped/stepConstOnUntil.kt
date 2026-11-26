@@ -1,5 +1,3 @@
-// TARGET_BACKEND: JVM
-
 // IMPORTANT!
 // Please, when your changes cause failures in bytecodeText tests for 'for' loops,
 // examine the resulting bytecode shape carefully.
@@ -47,3 +45,10 @@ fun withNonConstFirst(a: Int, aL: Long, aC: Char): Long {
 // 10 INVOKESTATIC kotlin/internal/ProgressionUtilKt.getProgressionLastElement
 // 0 NEW java/lang/IllegalArgumentException
 // 0 ATHROW
+
+// 22 IF
+// 54 ILOAD
+// 21 ISTORE
+// 2 IADD
+// 0 ISUB
+// 8 IINC

@@ -1,6 +1,3 @@
-// TARGET_BACKEND: JVM
-// WITH_STDLIB
-
 // IMPORTANT!
 // Please, when your changes cause failures in bytecodeText tests for 'for' loops,
 // examine the resulting bytecode shape carefully.
@@ -56,3 +53,10 @@ fun testUByteAndUShort(a: UByte, b: UShort): Int {
 // 0 ATHROW
 // 0 INVOKESTATIC kotlin/U(Int|Long).constructor-impl
 // 0 INVOKE\w+ kotlin/U(Int|Long).(un)?box-impl
+
+// 28 IF
+// 87 ILOAD
+// 42 ISTORE
+// 10 IADD
+// 0 ISUB
+// 10 IINC

@@ -1,6 +1,3 @@
-// TARGET_BACKEND: JVM
-// WITH_STDLIB
-
 // IMPORTANT!
 // Please, when your changes cause failures in bytecodeText tests for 'for' loops,
 // examine the resulting bytecode shape carefully.
@@ -49,3 +46,10 @@ fun fChar(a: Char, k: Int): Int {
 // 8 INVOKESTATIC kotlin/internal/ProgressionUtilKt.getProgressionLastElement
 // 8 NEW java/lang/IllegalArgumentException
 // 8 ATHROW
+
+// 24 IF
+// 80 ILOAD
+// 27 ISTORE
+// 12 IADD
+// 0 ISUB
+// 0 IINC

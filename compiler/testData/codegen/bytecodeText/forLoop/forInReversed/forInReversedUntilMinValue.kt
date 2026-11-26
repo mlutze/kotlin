@@ -1,5 +1,3 @@
-// WITH_STDLIB
-
 // IMPORTANT!
 // Please, when your changes cause failures in bytecodeText tests for 'for' loops,
 // examine the resulting bytecode shape carefully.
@@ -51,3 +49,10 @@ fun fULong(a: ULong): ULong {
 // 10 getFirst
 // 10 getLast
 // 10 getStep
+
+// 50 IF
+// 83 ILOAD
+// 35 ISTORE
+// 12 IADD
+// 0 ISUB
+// 0 IINC

@@ -41,3 +41,10 @@ fun fChar(a: Char): Int {
 // 0 getFirst
 // 0 getLast
 // 0 getStep
+
+// 12 IF
+// 28 ILOAD
+// 12 ISTORE
+// 6 IADD
+// 0 ISUB
+// 2 IINC

@@ -7,8 +7,6 @@
 // Run Kotlin compiler benchmarks (https://github.com/Kotlin/kotlin-benchmarks)
 // with compiler built from your changes if you are not sure.
 
-import kotlin.test.*
-
 fun box(): String {
     var sum = 0
     for (i in (1..<5).reversed()) {
