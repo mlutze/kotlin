@@ -7,7 +7,7 @@
 // Run Kotlin compiler benchmarks (https://github.com/Kotlin/kotlin-benchmarks)
 // with compiler built from your changes if you are not sure.
 
-// TODO Matt: explain why stepping `a until MIN_VALUE` / `a..<MIN_VALUE` must not decrement MIN_VALUE to MAX_VALUE and must fall back to `step` (KT-42533)
+// When last-exclusive is MIN_VALUE, we cannot decrement it without overflow, so we do not optimize.
 
 fun fInt(a: Int): Int {
     var sum = 0
