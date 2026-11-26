@@ -253,7 +253,7 @@ fun testUnsignedAndHighBitBoundaries() {
     for (i in ((ULONG_MAX - 2uL)..<ULONG_MAX).reversed()) ulongs += i
     assertEquals(listOf(ULONG_MAX - 1uL, ULONG_MAX - 2uL), ulongs)
 
-    // Crosses signed Long.MIN_VALUE / Long.MAX_VALUE boundary (0x8000_0000_0000_0000uL - 1uL == 0x7FFF_FFFF_FFFF_FFFFuL)
+    // TODO Matt: explain crossing the signed Long.MIN_VALUE / Long.MAX_VALUE boundary (0x8000_0000_0000_0000uL - 1uL == 0x7FFF_FFFF_FFFF_FFFFuL)
     ulongs.clear()
     for (i in ((ULONG_SIGN_BIT - 2uL) until ULONG_SIGN_BIT).reversed()) ulongs += i
     assertEquals(listOf(ULONG_SIGN_BIT - 1uL, ULONG_SIGN_BIT - 2uL), ulongs)
@@ -262,7 +262,7 @@ fun testUnsignedAndHighBitBoundaries() {
     for (i in ((ULONG_SIGN_BIT - 2uL)..<ULONG_SIGN_BIT).reversed()) ulongs += i
     assertEquals(listOf(ULONG_SIGN_BIT - 1uL, ULONG_SIGN_BIT - 2uL), ulongs)
 
-    // Contains checks with unsigned types (RangeContainsLowering uses allowUnsignedBounds = true)
+    // TODO Matt: explain unsigned contains checks (RangeContainsLowering with allowUnsignedBounds = true)
     assertTrue(3u in (1u.toUByte() until UBYTE_FIVE).reversed())
     assertFalse(5u in (1u.toUByte() until UBYTE_FIVE).reversed())
     assertFalse(0u in (1u.toUByte() until UBYTE_FIVE).reversed())
@@ -281,7 +281,7 @@ fun testMaxAndNonConstMinFirstNoOverflow() {
     for (i in ((INT_MAX - 2) until INT_MAX).reversed()) ints += i
     assertEquals(listOf(INT_MAX - 1, INT_MAX - 2), ints)
 
-    // Non-const first == MIN_VALUE: reversed loop counts down to MIN_VALUE and must not underflow/wrap
+    // TODO Matt: explain why non-const first == MIN_VALUE reversed countdown must not underflow/wrap
     ints.clear()
     for (i in (nonConstInt(INT_MIN) until INT_MIN_PLUS_3).reversed()) ints += i
     assertEquals(listOf(INT_MIN + 2, INT_MIN + 1, INT_MIN), ints)

@@ -105,36 +105,45 @@ class ProgressionHeaderInfo(
         )
     }
 
+    /**
+     * Returns the inclusive last value of the progression.
+     * Returns null if the last value cannot be determined statically.
+     */
     private fun computeConstLastInclusive(): IrExpression? {
         if (isLastInclusive) return last
+
+        // We can compute lastInclusive only when:
+        // - last is constant
+        // - step is +1/-1 and matches the progression direction
+        // - the last is not MIN_VALUE/MAX_VALUE (such that calculating lastInclusive would overflow)
         val stepAsLong = step.constLongValue ?: return null
         val lastAsLong = last.constLongValue ?: return null
-
-        // Ensure step is ±1 (matching direction) and `last - step` won't underflow/overflow (KT-42533).
         when {
             stepAsLong == 1L && direction == ProgressionDirection.INCREASING ->
-                if (lastAsLong == progressionType.minValueAsLong) return null
+                if (lastAsLong == progressionType.minValueAsLong) return null // overflow
             stepAsLong == -1L && direction == ProgressionDirection.DECREASING ->
-                if (lastAsLong == progressionType.maxValueAsLong) return null
+                if (lastAsLong == progressionType.maxValueAsLong) return null // overflow
             else -> return null
         }
 
-        val newLast = lastAsLong - stepAsLong
+        val lastInclusive = lastAsLong - stepAsLong
         return when (progressionType) {
             is IntProgressionType ->
-                IrConstImpl.int(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, newLast.toInt())
+                IrConstImpl.int(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, lastInclusive.toInt())
             is LongProgressionType ->
-                IrConstImpl.long(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, newLast)
+                IrConstImpl.long(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, lastInclusive)
             is CharProgressionType ->
-                IrConstImpl.char(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, newLast.toInt().toChar())
+                IrConstImpl.char(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, lastInclusive.toInt().toChar())
             is UIntProgressionType ->
-                IrConstImpl.int(last.startOffset, last.endOffset, progressionType.unsignedType, newLast.toInt())
+                IrConstImpl.int(last.startOffset, last.endOffset, progressionType.unsignedType, lastInclusive.toInt())
             is ULongProgressionType ->
-                IrConstImpl.long(last.startOffset, last.endOffset, progressionType.unsignedType, newLast)
-            else -> error("Unexpected progression type: ${progressionType::class.simpleName}")
+                IrConstImpl.long(last.startOffset, last.endOffset, progressionType.unsignedType, lastInclusive)
         }
     }
 
+    /**
+     * Indicates whether the value of the progression can overflow during iteration.
+     */
     val canOverflow: Boolean by lazy {
         if (canOverflow != null) return@lazy canOverflow
 
@@ -209,8 +218,8 @@ class ProgressionHeaderInfo(
                 additionalStatements = additionalStatements
             )
         } else {
-            // If reversed, we would have a "first-exclusive" loop. We are currently not supporting this for non-constant or
-            // overflowing bounds since it would add more complexity due to possible overflow when pre-incrementing the loop variable (see KT-42533).
+            // If reversed, we would have a "first-exclusive" loop. In general, this can cause overflow when pre-incrementing
+            // the loop variable (see KT-42533). We are currently only supporting this when the bound is constant and known not to overflow.
             revertToLastInclusive()?.asReversed()
         }
 
