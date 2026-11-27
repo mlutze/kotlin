@@ -8,7 +8,6 @@ const val ULONG_MAX: ULong = ULong.MAX_VALUE
 const val ULONG_SIGN_BIT: ULong = 0x8000_0000_0000_0000uL
 
 fun box(): String {
-    // TODO Matt: explain unsigned contains checks (RangeContainsLowering with allowUnsignedBounds = true)
     assertTrue(3u in (1u.toUByte() until UBYTE_FIVE).reversed())
     assertFalse(5u in (1u.toUByte() until UBYTE_FIVE).reversed())
     assertFalse(0u in (1u.toUByte() until UBYTE_FIVE).reversed())
