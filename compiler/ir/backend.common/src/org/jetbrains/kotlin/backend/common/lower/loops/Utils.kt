@@ -70,6 +70,7 @@ internal fun IrExpression.decrement(): IrExpression {
     }
 }
 
+/** Return `this - 1` if the expression is const and the subtraction does not overflow. Otherwise return `null`. */
 internal fun IrExpression.convertToInclusiveUpperBound(progressionType: ProgressionType): IrExpression? {
     val valueAsLong = constLongValue ?: return null
     if (valueAsLong == progressionType.minValueAsLong) return null
