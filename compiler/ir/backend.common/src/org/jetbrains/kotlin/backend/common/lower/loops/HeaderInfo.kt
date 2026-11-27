@@ -177,8 +177,8 @@ class ProgressionHeaderInfo(
                 additionalStatements = additionalStatements
             )
         } else {
-            // If reversed, we would have a "first-exclusive" loop. We are currently not supporting this since it would add more complexity
-            // due to possible overflow when pre-incrementing the loop variable (see KT-42533).
+            // If reversed, we would have a "first-exclusive" loop. In general, this can cause overflow when pre-incrementing
+            // the loop variable (see KT-42533). We are currently only supporting this when the bound is constant and known not to overflow.
             revertToLastInclusive()?.asReversed()
         }
 

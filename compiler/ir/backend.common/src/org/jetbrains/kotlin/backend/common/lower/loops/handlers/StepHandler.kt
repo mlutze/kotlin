@@ -47,8 +47,8 @@ internal class StepHandler(
             if (!nestedInfo.isLastInclusive) {
                 // To compute the new "last" value for a stepped progression (see call to getProgressionLastElement() below) where the
                 // underlying progression is last-exclusive, we must decrement the nested "last" by the step. However, this can cause
-                // underflow if "last" is MIN_VALUE. We will not support fully optimizing this scenario (e.g., `for (i in A until B step C`)
-                // for now. It will be partly optimized via DefaultProgressionHandler.
+                // underflow if "last" is MIN_VALUE. Therefore, we only perform this optimization if "last" is known statically not to be
+                // MIN_VALUE. Otherwise, it will be partly optimized via DefaultProgressionHandler.
                 nestedInfo = nestedInfo.revertToLastInclusive()
                     ?: return null
             }
