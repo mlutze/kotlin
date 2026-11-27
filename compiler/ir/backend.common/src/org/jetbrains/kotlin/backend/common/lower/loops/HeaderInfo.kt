@@ -103,9 +103,6 @@ class ProgressionHeaderInfo(
             )
         }
 
-    /**
-     * Indicates whether the value of the progression can overflow during iteration.
-     */
     val canOverflow: Boolean by lazy {
         if (canOverflow != null) return@lazy canOverflow
 
