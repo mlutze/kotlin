@@ -70,6 +70,24 @@ internal fun IrExpression.decrement(): IrExpression {
     }
 }
 
+internal fun IrExpression.convertToInclusiveUpperBound(progressionType: ProgressionType): IrExpression? {
+    val valueAsLong = constLongValue ?: return null
+    if (valueAsLong == progressionType.minValueAsLong) return null
+    val lastInclusive = valueAsLong - 1L
+    return when (progressionType) {
+        is IntProgressionType ->
+            IrConstImpl.int(startOffset, endOffset, progressionType.elementClass.defaultType, lastInclusive.toInt())
+        is LongProgressionType ->
+            IrConstImpl.long(startOffset, endOffset, progressionType.elementClass.defaultType, lastInclusive)
+        is CharProgressionType ->
+            IrConstImpl.char(startOffset, endOffset, progressionType.elementClass.defaultType, lastInclusive.toInt().toChar())
+        is UIntProgressionType ->
+            IrConstImpl.int(startOffset, endOffset, progressionType.unsignedType, lastInclusive.toInt())
+        is ULongProgressionType ->
+            IrConstImpl.long(startOffset, endOffset, progressionType.unsignedType, lastInclusive)
+    }
+}
+
 internal val IrExpression.canChangeValueDuringExecution: Boolean
     get() = when (this) {
         is IrGetValue ->

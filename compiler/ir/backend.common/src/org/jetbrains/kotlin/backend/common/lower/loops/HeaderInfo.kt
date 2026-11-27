@@ -14,9 +14,7 @@ import org.jetbrains.kotlin.ir.IrStatement
 import org.jetbrains.kotlin.ir.declarations.IrVariable
 import org.jetbrains.kotlin.ir.expressions.IrCall
 import org.jetbrains.kotlin.ir.expressions.IrExpression
-import org.jetbrains.kotlin.ir.expressions.impl.IrConstImpl
 import org.jetbrains.kotlin.ir.symbols.IrSymbol
-import org.jetbrains.kotlin.ir.util.defaultType
 import org.jetbrains.kotlin.ir.visitors.IrVisitor
 
 enum class ProgressionDirection {
@@ -89,57 +87,21 @@ class ProgressionHeaderInfo(
     direction = direction
 ) {
 
-    fun revertToLastInclusive(): ProgressionHeaderInfo? {
-        val lastInclusive = originalLastInclusive ?: computeConstLastInclusive() ?: return null
-        return ProgressionHeaderInfo(
-            progressionType = progressionType,
-            first = first,
-            last = lastInclusive,
-            step = step,
-            isLastInclusive = true,
-            isReversed = isReversed,
-            canOverflow = canOverflow,
-            direction = direction,
-            additionalStatements = additionalStatements,
-            originalLastInclusive = null
-        )
-    }
-
-    /**
-     * Returns the inclusive last value of the progression.
-     * Returns null if the last value cannot be determined statically.
-     */
-    private fun computeConstLastInclusive(): IrExpression? {
-        if (isLastInclusive) return last
-
-        // We can compute lastInclusive only when:
-        // - last is constant
-        // - step is +1/-1 and matches the progression direction
-        // - the last is not MIN_VALUE/MAX_VALUE (such that calculating lastInclusive would overflow)
-        val stepAsLong = step.constLongValue ?: return null
-        val lastAsLong = last.constLongValue ?: return null
-        when {
-            stepAsLong == 1L && direction == ProgressionDirection.INCREASING ->
-                if (lastAsLong == progressionType.minValueAsLong) return null // overflow
-            stepAsLong == -1L && direction == ProgressionDirection.DECREASING ->
-                if (lastAsLong == progressionType.maxValueAsLong) return null // overflow
-            else -> return null
+    fun revertToLastInclusive(): ProgressionHeaderInfo? =
+        originalLastInclusive?.let {
+            ProgressionHeaderInfo(
+                progressionType = progressionType,
+                first = first,
+                last = originalLastInclusive,
+                step = step,
+                isLastInclusive = true,
+                isReversed = isReversed,
+                canOverflow = canOverflow,
+                direction = direction,
+                additionalStatements = additionalStatements,
+                originalLastInclusive = null
+            )
         }
-
-        val lastInclusive = lastAsLong - stepAsLong
-        return when (progressionType) {
-            is IntProgressionType ->
-                IrConstImpl.int(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, lastInclusive.toInt())
-            is LongProgressionType ->
-                IrConstImpl.long(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, lastInclusive)
-            is CharProgressionType ->
-                IrConstImpl.char(last.startOffset, last.endOffset, progressionType.elementClass.defaultType, lastInclusive.toInt().toChar())
-            is UIntProgressionType ->
-                IrConstImpl.int(last.startOffset, last.endOffset, progressionType.unsignedType, lastInclusive.toInt())
-            is ULongProgressionType ->
-                IrConstImpl.long(last.startOffset, last.endOffset, progressionType.unsignedType, lastInclusive)
-        }
-    }
 
     /**
      * Indicates whether the value of the progression can overflow during iteration.
