@@ -103,7 +103,7 @@ internal class CharProgressionType(irBuiltIns: IrBuiltIns, symbols: BackendSymbo
 // We use the `<unsafe-coerce>` intrinsic if available (currently JVM-only) to perform the conversions, and fallback to calling
 // `to(U)Int/(U)Long()` functions otherwise.
 
-internal abstract class UnsignedProgressionType(
+internal sealed class UnsignedProgressionType(
     symbols: BackendSymbols,
     elementClass: IrClass,
     stepClass: IrClass,
