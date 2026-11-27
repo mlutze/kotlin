@@ -27,14 +27,16 @@ internal class RangeUntilHandler(private val context: CommonBackendContext) : He
 
     override fun build(expression: IrCall, data: ProgressionType, scopeOwner: IrSymbol): HeaderInfo =
         with(context.createIrBuilder(scopeOwner, expression.startOffset, expression.endOffset)) {
+            val last = expression.arguments[1]!!
             ProgressionHeaderInfo(
                 data,
                 first = expression.dispatchReceiver!!,
-                last = expression.arguments[1]!!,
+                last = last,
                 step = irInt(1),
                 canOverflow = false,
                 isLastInclusive = false,
-                direction = ProgressionDirection.INCREASING
+                direction = ProgressionDirection.INCREASING,
+                originalLastInclusive = last.convertToInclusiveUpperBound(data)
             )
         }
 }

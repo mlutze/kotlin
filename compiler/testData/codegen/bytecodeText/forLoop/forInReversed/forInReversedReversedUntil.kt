@@ -32,13 +32,13 @@ fun box(): String {
 // 0 getStart
 // 0 getEnd
 
-// 3 reversed
-// 3 getFirst
-// 3 getLast
-// 3 getStep
+// 0 reversed
+// 0 getFirst
+// 0 getLast
+// 0 getStep
 
-// 24 ILOAD
-// 12 ISTORE
-// 4 IADD
+// 9 ILOAD
+// 9 ISTORE
+// 3 IADD
 // 1 ISUB
-// 0 IINC
+// 1 IINC
